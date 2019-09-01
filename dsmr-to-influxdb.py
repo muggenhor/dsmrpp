@@ -2,8 +2,10 @@
 
 import sys
 print("Importing...", file=sys.stderr, flush=True)
+
 from aioinflux import InfluxDBClient, iterpoints
 import asyncio
+from base64 import b16decode
 from datetime import datetime
 from dsmr_parser.clients import create_dsmr_reader
 from dsmr_parser import obis_references as obis_ref
@@ -60,11 +62,11 @@ async def transmit_telegram(ifx, telegram):
     except KeyError:
         now = datetime.utcnow()
     try:
-        serial = telegram.pop(obis_ref.EQUIPMENT_IDENTIFIER).value
+        serial = b16decode(telegram.pop(obis_ref.EQUIPMENT_IDENTIFIER).value).decode('ASCII')
     except KeyError:
         serial = None
     try:
-        serial_gas = telegram.pop(obis_ref.EQUIPMENT_IDENTIFIER_GAS).value
+        serial_gas = b16decode(telegram.pop(obis_ref.EQUIPMENT_IDENTIFIER_GAS).value).decode('ASCII')
     except KeyError:
         serial_gas = None
     points = []
