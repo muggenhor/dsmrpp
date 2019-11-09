@@ -56,7 +56,7 @@ nonzero_only_re = re.compile(r'power_(?:consumption|production)$')
 once_per_day_re = re.compile(r'power_(?:consumption|production)_(?:low|normal)|power_tariff|gas_consumption$|voltage_.*$')
 once_per_day_re = re.compile(r'^(?=.)$')
 
-last_unlogged_zero = {}
+last_unlogged = {}
 
 async def transmit_telegram(ifx, telegram):
     try:
@@ -130,12 +130,12 @@ async def transmit_telegram(ifx, telegram):
             #debug:print(f"@{prev_time} {idx:>2d}: {point['tags']['entity_id']:<26s}: {prev_value!r}=={value!r}=>{value == prev_value}", file=sys.stderr, flush=True)
             if value == prev_value and not (
                     prev_value != 0 and nonzero_only_re.match(point['tags']['entity_id'])):
-                if value == 0 and (key not in last_unlogged_zero or last_unlogged_zero[key]['time'] < point['time']):
-                    last_unlogged_zero[key] = point
+                if value == 0 and (key not in last_unlogged or last_unlogged[key]['time'] < point['time']):
+                    last_unlogged[key] = point
                 points[idx] = None
                 continue
-            elif value != 0 and key in last_unlogged_zero:
-                points.append(last_unlogged_zero.pop(key))
+            elif key in last_unlogged:
+                points.append(last_unlogged.pop(key))
     points = [point for point in points if point]
 
     #debug:import pprint
